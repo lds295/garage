@@ -1,65 +1,77 @@
-# Mr. Hook’s Garage ERD
+# Mr. Hook's Dental Clinic (Chen-Style Approximation in Mermaid)
 
 ```mermaid
-erDiagram
-    CLIENT {
-        string clientName PK
-        string clientPhone PK
-        string streetNo
-        string streetName
-        string aptNo
-        string city
-        string state
-        string zip
-    }
+flowchart TB
+    %% Define classes for some styling (optional)
+    classDef entity fill:#ffffee,stroke:#333,stroke-width:1px,color:#000,border-radius:5px
+    classDef relationship fill:#eeffff,stroke:#333,stroke-width:1px,color:#000
+    classDef note fill:#fff,stroke:none,color:#333
 
-    AUTHORIZED_CONTACT {
-        string contactName PK
-        string contactPhone PK
-    }
+    %% ============ ENTITIES ============
 
-    CAR {
-        string VIN PK
-        string licensePlate
-        string make
-        string model
-        string color
-        int year
-    }
+    DENTIST[ 
+      <b>DENTIST</b><br/>
+      <u>licenseNo</u> (PK)<br/>
+      firstName, lastName<br/>
+      phone<br/>
+      dateOfBirth<br/>
+      <i>specialties</i> (multi-valued)
+    ]
+    class DENTIST entity
 
-    REPAIR {
-        int repairID PK
-        string dateCompleted
-        string problemDescription
-        float totalCost
-    }
+    PATIENT[
+      <b>PATIENT</b><br/>
+      <u>patientID</u> (PK)<br/>
+      firstName, middleName, lastName<br/>
+      phone<br/>
+      dateOfBirth, gender<br/>
+      dateRegistered<br/>
+      <i>address</i> (composite)
+    ]
+    class PATIENT entity
 
-    PROCEDURE {
-        string procedureCode PK
-        string description
-        float cost
-    }
+    APPOINTMENT[
+      <b>APPOINTMENT</b><br/>
+      <u>appointmentID</u> (PK)<br/>
+      date, time
+    ]
+    class APPOINTMENT entity
 
-    SUPPLY {
-        string supplyID PK
-        string description
-        string brand
-        float costPrice
-        float salePrice
-        int stockQuantity
-    }
+    PROCEDURE[
+      <b>PROCEDURE</b><br/>
+      <u>procedureCode</u> (PK)<br/>
+      price<br/>
+      description
+    ]
+    class PROCEDURE entity
 
-    USES {
-        int repairID
-        string procedureCode
-        string supplyID
-        int quantityUsed
-    }
+    %% ============ RELATIONSHIPS ============
 
-    CLIENT ||--|{ CAR : "owns"
-    CLIENT }o--o{ AUTHORIZED_CONTACT : "authorizes"
-    CAR ||--|{ REPAIR : "has"
-    REPAIR }o--|{ PROCEDURE : "includes"
-    REPAIR ||--|{ USES : "records usage"
-    PROCEDURE ||--|{ USES : "is used in"
-    SUPPLY ||--|{ USES : "is used in"
+    %% Dentist -- Appointment
+    HAS_DENTIST_APPT{{ has }}:::relationship
+    DENTIST --| 1 | HAS_DENTIST_APPT
+    HAS_DENTIST_APPT --| N | APPOINTMENT
+    %% 1 Dentist can have N Appointments
+    %% An Appointment must have exactly 1 Dentist
+    %% (If you want to show total vs partial participation, 
+    %% we add a note or color. Mermaid doesn't do double lines.)
+
+    %% Patient -- Appointment
+    HAS_PATIENT_APPT{{ has }}:::relationship
+    PATIENT --| 1 | HAS_PATIENT_APPT
+    HAS_PATIENT_APPT --| N | APPOINTMENT
+    %% 1 Patient can have N Appointments
+    %% An Appointment belongs to exactly 1 Patient
+
+    %% Appointment -- Procedure (M:N)
+    INCLUDES{{ includes }}:::relationship
+    APPOINTMENT --| N | INCLUDES
+    INCLUDES --| N | PROCEDURE
+    %% An Appointment can include N Procedures
+    %% A Procedure can appear in N Appointments
+
+    %% Optional note on derived or extra rules
+    note1(Note: “specialties” is multi-valued. “address” is a composite attribute.):::note
+
+    %% Position the note
+    APPOINTMENT -- note1

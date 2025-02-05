@@ -1,152 +1,183 @@
-# Mr. Hook’s Garage — Chen‐Style ERD (Approx.)
+# Mr. Hook’s Academic Library — Chen‐Style ERD (Approx.)
 
 ```mermaid
 flowchart TB
-    %% BASIC STYLING (optional) %%%%%%%%%%%%%%%%%%%%%%%%
+    %% === STYLING (optional) =======================================
     classDef entityColor fill:#ffffcc,stroke:#333,stroke-width:1px,color:#000
     classDef relColor fill:#ccffff,stroke:#333,stroke-width:1px,color:#000
     classDef attrColor fill:#ffffff,stroke:#666,stroke-width:1px,color:#000,stroke-dasharray:2 2
+    classDef isaColor fill:#ffe0e0,stroke:#333,stroke-width:1px,color:#000
 
-    %% ===================================================
-    %% 1) CLIENT ENTITY
-    %% ===================================================
-    subgraph clientEntity[" "]
+    %% ===============================================================
+    %% SUPERCLASS: USER
+    %% ISA: STUDENT, TEACHER, GUEST
+    %% ===============================================================
+    subgraph userEntity[" "]
         direction TB
-        CLIENT( CLIENT ):::entityColor
+        USER( "USER" ):::entityColor
 
-        C_name_phone(("clientName+phone PK")):::attrColor
-        C_address(("address (composite)")):::attrColor
-        %% For a true Chen diagram, you'd list sub-attributes (street, aptNo, etc.) 
-        %% as separate ovals or treat "address" as composite.
+        U_userNo(("userNo PK")):::attrColor
+        U_name(("firstName, lastName")):::attrColor
+        U_age(("age")):::attrColor
+        U_edu(("educationLevel")):::attrColor
 
-        CLIENT --- C_name_phone
-        CLIENT --- C_address
+        USER --- U_userNo
+        USER --- U_name
+        USER --- U_age
+        USER --- U_edu
     end
 
-    %% ===================================================
-    %% 2) AUTHORIZED_CONTACT ENTITY
-    %% ===================================================
-    subgraph contactEntity[" "]
+    %% ISA Relationship diamond
+    ISA_USER{{ISA}}:::isaColor
+    USER -- ISA_USER
+    %% We'll branch out to Student, Teacher, Guest.
+
+    %% =============== STUDENT SUBCLASS =================
+    subgraph studentEntity[" "]
         direction TB
-        AUTH_CONTACT( AUTHORIZED_CONTACT ):::entityColor
+        STUDENT("STUDENT"):::entityColor
 
-        AC_name_phone(("contactName+phone PK")):::attrColor
+        ST_stID(("studentID")):::attrColor
+        ST_course(("course")):::attrColor
+        ST_year(("yearOfEntry")):::attrColor
 
-        AUTH_CONTACT --- AC_name_phone
+        STUDENT --- ST_stID
+        STUDENT --- ST_course
+        STUDENT --- ST_year
+    end
+    ISA_USER -- STUDENT
+
+    %% =============== TEACHER SUBCLASS =================
+    subgraph teacherEntity[" "]
+        direction TB
+        TEACHER("TEACHER"):::entityColor
+
+        T_dept(("department")):::attrColor
+        T_degree(("degree")):::attrColor
+        T_courses(("coursesTaught (multi-valued)")):::attrColor
+
+        TEACHER --- T_dept
+        TEACHER --- T_degree
+        TEACHER --- T_courses
+    end
+    ISA_USER -- TEACHER
+
+    %% =============== GUEST SUBCLASS =================
+    subgraph guestEntity[" "]
+        direction TB
+        GUEST("GUEST"):::entityColor
+        %% Guest has no extra attributes
+
+    end
+    ISA_USER -- GUEST
+
+    %% ===============================================================
+    %% SUPERCLASS: PUBLICATION
+    %% ISA: BOOK, PERIODICAL
+    %% ===============================================================
+    subgraph publicationEntity[" "]
+        direction TB
+        PUBLICATION("PUBLICATION"):::entityColor
+
+        PUB_isbn(("ISBN PK")):::attrColor
+        PUB_title(("title")):::attrColor
+        PUB_issue(("issueNumber")):::attrColor
+        PUB_year(("year")):::attrColor
+        PUB_copies(("availableCopies")):::attrColor
+
+        PUBLICATION --- PUB_isbn
+        PUBLICATION --- PUB_title
+        PUBLICATION --- PUB_issue
+        PUBLICATION --- PUB_year
+        PUBLICATION --- PUB_copies
     end
 
-    %% ===================================================
-    %% 3) CAR ENTITY
-    %% ===================================================
-    subgraph carEntity[" "]
+    %% ISA diamond for Book & Periodical
+    ISA_PUB{{ISA}}:::isaColor
+    PUBLICATION -- ISA_PUB
+
+    %% ================= BOOK SUBCLASS ==================
+    subgraph bookEntity[" "]
         direction TB
-        CAR( CAR ):::entityColor
+        BOOK("BOOK"):::entityColor
 
-        CAR_vin(("VIN PK")):::attrColor
-        CAR_plate(("licensePlate")):::attrColor
-        CAR_make(("make")):::attrColor
-        CAR_model(("model")):::attrColor
-        CAR_color(("color")):::attrColor
-        CAR_year(("year")):::attrColor
+        B_authors(("authors (multi-valued)")):::attrColor
+        B_pub(("publisher")):::attrColor
+        B_city(("city")):::attrColor
 
-        CAR --- CAR_vin
-        CAR --- CAR_plate
-        CAR --- CAR_make
-        CAR --- CAR_model
-        CAR --- CAR_color
-        CAR --- CAR_year
+        BOOK --- B_authors
+        BOOK --- B_pub
+        BOOK --- B_city
     end
+    ISA_PUB -- BOOK
 
-    %% ===================================================
-    %% 4) REPAIR ENTITY
-    %% ===================================================
-    subgraph repairEntity[" "]
+    %% ================= PERIODICAL SUBCLASS ==================
+    subgraph periodicalEntity[" "]
         direction TB
-        REPAIR( REPAIR ):::entityColor
+        PERIODICAL("PERIODICAL"):::entityColor
 
-        REP_id(("repairID PK")):::attrColor
-        REP_date(("dateCompleted")):::attrColor
-        REP_problem(("problemDescription")):::attrColor
-        REP_total(("totalCost derived")):::attrColor
+        P_org(("organizers")):::attrColor
+        P_subtitle(("subtitle")):::attrColor
+        P_vol(("volume")):::attrColor
+        P_num(("number")):::attrColor
 
-        REPAIR --- REP_id
-        REPAIR --- REP_date
-        REPAIR --- REP_problem
-        REPAIR --- REP_total
+        PERIODICAL --- P_org
+        PERIODICAL --- P_subtitle
+        PERIODICAL --- P_vol
+        PERIODICAL --- P_num
     end
+    ISA_PUB -- PERIODICAL
 
-    %% ===================================================
-    %% 5) PROCEDURE ENTITY
-    %% ===================================================
-    subgraph procedureEntity[" "]
-        direction TB
-        PROCEDURE( PROCEDURE ):::entityColor
+    %% ===============================================================
+    %% RELATIONSHIPS
+    %%  1) BORROWS (User <-> Book)
+    %%  2) READS (User <-> Publication)
+    %%  3) REQUESTS (Teacher <-> Book)
+    %% ===============================================================
 
-        PROC_code(("procedureCode PK")):::attrColor
-        PROC_desc(("description")):::attrColor
-        PROC_cost(("cost")):::attrColor
+    %% ---------------- BORROWS ---------------- 
+    %% A User can borrow multiple Books; 
+    %% A Book can be borrowed by many Users (but subject to copy limits).
+    %% We store checkoutDate, expectedReturnDate, actualReturnDate, fine (derived).
+    BORROWS{{BORROWS}}:::relColor
+    USER -- "N" --- BORROWS
+    BORROWS -- "N" --- BOOK
 
-        PROCEDURE --- PROC_code
-        PROCEDURE --- PROC_desc
-        PROCEDURE --- PROC_cost
-    end
+    %% Relationship attributes 
+    %% (in Chen, we can attach them to the diamond)
+    %% We'll simulate them as "oval" nodes hanging off the diamond.
+    BR_chOut(("checkoutDate")):::attrColor
+    BR_exp(("expectedReturnDate")):::attrColor
+    BR_act(("actualReturnDate")):::attrColor
+    BR_fine(("fine derived")):::attrColor
 
-    %% ===================================================
-    %% 6) SUPPLY ENTITY
-    %% ===================================================
-    subgraph supplyEntity[" "]
-        direction TB
-        SUPPLY( SUPPLY ):::entityColor
+    BORROWS --- BR_chOut
+    BORROWS --- BR_exp
+    BORROWS --- BR_act
+    BORROWS --- BR_fine
 
-        SUP_id(("supplyID PK")):::attrColor
-        SUP_desc(("description")):::attrColor
-        SUP_brand(("brand")):::attrColor
-        SUP_cprice(("costPrice")):::attrColor
-        SUP_sprice(("salePrice")):::attrColor
-        SUP_stock(("stockQuantity")):::attrColor
+    %% ---------------- READS ----------------
+    %% A User can read many Publications; 
+    %% A Publication can be read by many Users (M:N).
+    %% We store the date/time the user checked out & returned it to tray.
+    READS{{READS}}:::relColor
+    USER -- "M" --- READS
+    READS -- "N" --- PUBLICATION
 
-        SUPPLY --- SUP_id
-        SUPPLY --- SUP_desc
-        SUPPLY --- SUP_brand
-        SUPPLY --- SUP_cprice
-        SUPPLY --- SUP_sprice
-        SUPPLY --- SUP_stock
-    end
+    R_out(("dateTimeOut")):::attrColor
+    R_in(("dateTimeIn")):::attrColor
+    READS --- R_out
+    READS --- R_in
 
+    %% ---------------- REQUESTS (Teacher -> Book) ----------------
+    %% A Teacher can request many Books; 
+    %% A Book can be requested by many Teachers (M:N).
+    %% We store dateRequested, expirationDate.
+    REQUESTS{{REQUESTS}}:::relColor
+    TEACHER -- "M" --- REQUESTS
+    REQUESTS -- "N" --- BOOK
 
-    %% ===================================================
-    %% RELATIONSHIPS (DIAMONDS)
-    %% ===================================================
-
-    %% 1) CLIENT -- OWNS -- CAR (1..N)
-    %%    A Client can own multiple Cars; each Car must have exactly 1 Client
-    OWNS{{OWNS}}:::relColor
-    CLIENT -- "1" --- OWNS
-    OWNS -- "N" --- CAR
-
-    %% 2) CLIENT -- AUTHORIZES -- AUTHORIZED_CONTACT (M:N)
-    %%    A Client can have multiple contacts; a contact can be tied to multiple clients
-    AUTHORIZES{{AUTHORIZES}}:::relColor
-    CLIENT -- "M" --- AUTHORIZES
-    AUTHORIZES -- "N" --- AUTH_CONTACT
-
-    %% 3) CAR -- HAS_REPAIR -- REPAIR (1..N)
-    %%    One Car can have many Repairs; each Repair belongs to exactly 1 Car
-    HAS_REPAIR{{HAS_REPAIR}}:::relColor
-    CAR -- "1" --- HAS_REPAIR
-    HAS_REPAIR -- "N" --- REPAIR
-
-    %% 4) REPAIR -- INCLUDES -- PROCEDURE (M:N)
-    %%    A Repair can include multiple Procedures; 
-    %%    A Procedure can appear in multiple Repairs
-    INCLUDES{{INCLUDES}}:::relColor
-    REPAIR -- "M" --- INCLUDES
-    INCLUDES -- "N" --- PROCEDURE
-
-    %% 5) TERNARY RELATION: REPAIR + PROCEDURE + SUPPLY = USES (M:N:N)
-    %%    "Which supplies were used in which procedure for which repair?"
-    USES{{USES}}:::relColor
-    REPAIR -- "N" --- USES
-    PROCEDURE -- "N" --- USES
-    SUPPLY -- "N" --- USES
-
+    Req_date(("dateRequested")):::attrColor
+    Req_exp(("expirationDate")):::attrColor
+    REQUESTS --- Req_date
+    REQUESTS --- Req_exp

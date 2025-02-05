@@ -1,4 +1,4 @@
-# Mr. Hook’s Garage E-R Diagram
+# Mr. Hook’s Garage ERD
 
 ```mermaid
 erDiagram
@@ -29,30 +29,30 @@ erDiagram
 
     REPAIR {
         int repairID PK
-        date dateCompleted
+        string dateCompleted
         string problemDescription
-        decimal totalCost DERIVED
+        float totalCost
     }
 
     PROCEDURE {
         string procedureCode PK
         string description
-        decimal cost
+        float cost
     }
 
     SUPPLY {
         string supplyID PK
         string description
         string brand
-        decimal costPrice
-        decimal salePrice
+        float costPrice
+        float salePrice
         int stockQuantity
     }
 
     USES {
-        int repairID FK
-        string procedureCode FK
-        string supplyID FK
+        int repairID
+        string procedureCode
+        string supplyID
         int quantityUsed
     }
 

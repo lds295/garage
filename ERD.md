@@ -1,119 +1,157 @@
-# Mr. Hook's Dental Clinic: Approximated Chen-Style ERD (Mermaid)
+# Mr. Hook’s Garage — Chen‐Style ERD (Approx.)
 
 ```mermaid
 flowchart TB
-    %% Some stylistic definitions (optional)
+    %% STYLING (optional)
     classDef entityColor fill:#ffffcc,stroke:#333,stroke-width:1px,color:#000
     classDef relColor fill:#ccffff,stroke:#333,stroke-width:1px,color:#000
-    classDef attrColor fill:#ffffff,stroke:#666,stroke-width:1px,color:#000,stroke-dasharray: 2 2
+    classDef attrColor fill:#ffffff,stroke:#666,stroke-width:1px,color:#000,stroke-dasharray:2 2
 
-    %% ----------------------
-    %% DENTIST (Entity)
-    %% ----------------------
-    subgraph dentistEntity[" "]
+    %% ===============================================================
+    %%  1) CLIENT ENTITY
+    %% ===============================================================
+    subgraph clientEntity[" "]
         direction TB
-        DENTIST( DENTIST ):::entityColor
+        CLIENT( CLIENT ):::entityColor
 
-        %% Each attribute as a separate circle/oval
-        D_lic((licenseNo PK)):::attrColor
-        D_first((firstName)):::attrColor
-        D_last((lastName)):::attrColor
-        D_phone((phone)):::attrColor
-        D_dob((dateOfBirth)):::attrColor
-        D_spec((specialties)):::attrColor
-
-        %% Connect "DENTIST" label to each attribute
-        DENTIST --- D_lic
-        DENTIST --- D_first
-        DENTIST --- D_last
-        DENTIST --- D_phone
-        DENTIST --- D_dob
-        %% "specialties" is multi-valued in Chen, but we simulate with a single circle
-        DENTIST --- D_spec
+        C_name_phone((clientName, clientPhone) PK):::attrColor
+        C_addr((address (composite))):::attrColor
+        %% Address can have sub-attributes: streetNo, streetName, aptNo, city, state, zip
+        %% If you want to list them separately, you can create multiple ovals. 
+        %% For brevity, we keep it as one 'composite' attribute.
+        
+        CLIENT --- C_name_phone
+        CLIENT --- C_addr
     end
 
-    %% ----------------------
-    %% PATIENT (Entity)
-    %% ----------------------
-    subgraph patientEntity[" "]
+    %% ===============================================================
+    %%  2) AUTHORIZED_CONTACT ENTITY
+    %% ===============================================================
+    subgraph contactEntity[" "]
         direction TB
-        PATIENT( PATIENT ):::entityColor
+        AUTH_CONTACT( AUTHORIZED_CONTACT ):::entityColor
 
-        P_id((patientID PK)):::attrColor
-        P_fn((firstName)):::attrColor
-        P_mn((middleName)):::attrColor
-        P_ln((lastName)):::attrColor
-        P_ph((phone)):::attrColor
-        P_dob((dateOfBirth)):::attrColor
-        P_gen((gender)):::attrColor
-        P_reg((dateRegistered)):::attrColor
-        P_addr((address composite)):::attrColor
+        AC_name_phone((contactName, contactPhone) PK):::attrColor
 
-        PATIENT --- P_id
-        PATIENT --- P_fn
-        PATIENT --- P_mn
-        PATIENT --- P_ln
-        PATIENT --- P_ph
-        PATIENT --- P_dob
-        PATIENT --- P_gen
-        PATIENT --- P_reg
-        PATIENT --- P_addr
+        AUTH_CONTACT --- AC_name_phone
     end
 
-    %% ----------------------
-    %% APPOINTMENT (Entity)
-    %% ----------------------
-    subgraph appointmentEntity[" "]
+    %% ===============================================================
+    %%  3) CAR ENTITY
+    %% ===============================================================
+    subgraph carEntity[" "]
         direction TB
-        APPOINTMENT( APPOINTMENT ):::entityColor
+        CAR( CAR ):::entityColor
 
-        A_id((appointmentID PK)):::attrColor
-        A_date((date)):::attrColor
-        A_time((time)):::attrColor
+        CAR_vin((VIN PK)):::attrColor
+        CAR_plate((licensePlate)):::attrColor
+        CAR_make((make)):::attrColor
+        CAR_model((model)):::attrColor
+        CAR_color((color)):::attrColor
+        CAR_year((year)):::attrColor
 
-        APPOINTMENT --- A_id
-        APPOINTMENT --- A_date
-        APPOINTMENT --- A_time
+        CAR --- CAR_vin
+        CAR --- CAR_plate
+        CAR --- CAR_make
+        CAR --- CAR_model
+        CAR --- CAR_color
+        CAR --- CAR_year
     end
 
-    %% ----------------------
-    %% PROCEDURE (Entity)
-    %% ----------------------
+    %% ===============================================================
+    %%  4) REPAIR ENTITY
+    %% ===============================================================
+    subgraph repairEntity[" "]
+        direction TB
+        REPAIR( REPAIR ):::entityColor
+
+        REP_id((repairID PK)):::attrColor
+        REP_date((dateCompleted)):::attrColor
+        REP_problem((problemDescription)):::attrColor
+        REP_total((totalCost (derived))):::attrColor
+
+        REPAIR --- REP_id
+        REPAIR --- REP_date
+        REPAIR --- REP_problem
+        REPAIR --- REP_total
+    end
+
+    %% ===============================================================
+    %%  5) PROCEDURE ENTITY
+    %% ===============================================================
     subgraph procedureEntity[" "]
         direction TB
         PROCEDURE( PROCEDURE ):::entityColor
 
-        PR_code((procedureCode PK)):::attrColor
-        PR_price((price)):::attrColor
-        PR_desc((description)):::attrColor
+        PROC_code((procedureCode PK)):::attrColor
+        PROC_desc((description)):::attrColor
+        PROC_cost((cost)):::attrColor
 
-        PROCEDURE --- PR_code
-        PROCEDURE --- PR_price
-        PROCEDURE --- PR_desc
+        PROCEDURE --- PROC_code
+        PROCEDURE --- PROC_desc
+        PROCEDURE --- PROC_cost
     end
 
-    %% --------------------------------
-    %% RELATIONSHIPS (as diamond shapes)
-    %% --------------------------------
+    %% ===============================================================
+    %%  6) SUPPLY ENTITY
+    %% ===============================================================
+    subgraph supplyEntity[" "]
+        direction TB
+        SUPPLY( SUPPLY ):::entityColor
 
-    %% 1) DENTIST -- APPOINTMENT
-    %%    A Dentist can have N appointments
-    %%    An Appointment has exactly 1 Dentist ( total on appointment side )
-    HAS_DENT_APPT{{HAS}}:::relColor
-    DENTIST -- "1" --- HAS_DENT_APPT
-    HAS_DENT_APPT -- "N" --- APPOINTMENT
+        SUP_id((supplyID PK)):::attrColor
+        SUP_desc((description)):::attrColor
+        SUP_brand((brand)):::attrColor
+        SUP_costPrice((costPrice)):::attrColor
+        SUP_salePrice((salePrice)):::attrColor
+        SUP_stock((stockQuantity)):::attrColor
 
-    %% 2) PATIENT -- APPOINTMENT
-    %%    A Patient can have N appointments
-    %%    An Appointment has exactly 1 Patient ( total on appointment side )
-    HAS_PAT_APPT{{HAS}}:::relColor
-    PATIENT -- "1" --- HAS_PAT_APPT
-    HAS_PAT_APPT -- "N" --- APPOINTMENT
+        SUPPLY --- SUP_id
+        SUPPLY --- SUP_desc
+        SUPPLY --- SUP_brand
+        SUPPLY --- SUP_costPrice
+        SUPPLY --- SUP_salePrice
+        SUPPLY --- SUP_stock
+    end
 
-    %% 3) APPOINTMENT -- PROCEDURE (M:N)
-    %%    An Appointment can include multiple procedures
-    %%    A Procedure can appear in multiple appointments
-    %%    M:N in Chen is typical. We do one diamond node "INCLUDES".
+
+    %% ===============================================================
+    %% RELATIONSHIPS 
+    %% ===============================================================
+
+    %% 1) CLIENT -- Owns -- CAR (1..N)
+    %%    A Client can own multiple Cars; each Car must have exactly 1 Client (total on Car side).
+    OWN{{OWNS}}:::relColor
+    CLIENT -- "1" --- OWN
+    OWN -- "N" --- CAR
+
+    %% 2) CLIENT -- Authorizes -- AUTHORIZED_CONTACT (M:N)
+    %%    A Client can have multiple authorized contacts;
+    %%    An authorized contact can be associated with multiple clients.
+    AUTH{{AUTHORIZES}}:::relColor
+    CLIENT -- "M" --- AUTH
+    AUTH -- "N" --- AUTH_CONTACT
+
+    %% 3) CAR -- HasRepair -- REPAIR (1..N)
+    %%    One Car can have many Repairs; each Repair is for exactly 1 Car.
+    HASREP{{HAS_REPAIR}}:::relColor
+    CAR -- "1" --- HASREP
+    HASREP -- "N" --- REPAIR
+
+    %% 4) REPAIR -- Includes -- PROCEDURE (M:N)
+    %%    A Repair can include multiple Procedures;
+    %%    A Procedure can appear in multiple Repairs.
     INCLUDES{{INCLUDES}}:::relColor
-    APPOINTMENT -- "N" --- INCLUDES
+    REPAIR -- "M" --- INCLUDES
     INCLUDES -- "N" --- PROCEDURE
+
+    %% 5) TERNARY RELATION: REPAIR + PROCEDURE + SUPPLY = USES
+    %%    "Which supplies were used in which procedure for which repair?"
+    %%    In Chen, a Ternary relationship is a single diamond connected to 3 entities.
+    USES{{USES}}:::relColor
+    REPAIR -- "N" --- USES
+    PROCEDURE -- "N" --- USES
+    SUPPLY -- "N" --- USES
+
+    %% We might add an attribute "quantityUsed" 
+    %% but in Chen we'd typically handle it with an associative entity or label on the ternary relationship
